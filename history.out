@@ -1,0 +1,115 @@
+    1  ip a
+    2  hostname
+    3  sudo parted -s /dev/sdb mklabel gpt
+    4  sudo parted -s /dev/sdb mkpart primary ext4 0% 100%
+    5  sudo mkfs.ext4 -L MEPHI_WEB /dev/sdb1
+    6  sudo blkid /dev/sdb1
+    7  sudo mkdir -p /mephi-web
+    8  LABEL=MEPHI_WEB   /mephi-web   ext4   defaults   0 2
+    9  mkdir -p /mephi-web
+   10  LABEL=MEPHI_WEB   /mephi-web   ext4   defaults   0 2
+   11  echo 'LABEL=MEPHI_WEB   /mephi-web   ext4   defaults   0 2' | sudo tee -a /etc/fstab
+   12  sudo mount -a
+   13  sudo mount -a
+   14  mount | grep /mephi-web
+   15  sudo systemctl enable nginx --now
+   16  sudo systemctl status nginx
+   17  sudo journalctl -u nginx -b > ~/journalctl.out
+   18  sudo mkdir -p /data/mephi-2026
+   19  sudo groupadd -g 4444 curators
+   20  sudo useradd -u 5501 -m user1
+   21  sudo useradd -u 5502 -m user2
+   22  sudo useradd -u 5503 -m user3
+   23  sudo useradd -m -G curators curator1
+   24  sudo useradd -m -G curators curator2
+   25  sudo chown root:root /data/mephi-2026
+   26  sudo chmod 700 /data/mephi-2026
+   27  setfacl -d -m u:user1:rw- /data/mephi-2026
+   28  setfacl -d -m u:user2:rw- /data/mephi-2026
+   29  setfacl -d -m u:user3:rw- /data/mephi-2026
+   30  setfacl -d -m g:curators:r-- /data/mephi-2026
+   31  setfacl -d -m o::--- /data/mephi-2026
+   32  setfacl -m u:user1:rwx /data/mephi-2026
+   33  setfacl -m u:user2:rwx /data/mephi-2026
+   34  setfacl -m u:user3:rwx /data/mephi-2026
+   35  setfacl -m g:curators:r-x /data/mephi-2026
+   36  setfacl -m o::--- /data/mephi-2026
+   37  getfacl /data/mephi-2026
+   38  setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
+   39  getcap /usr/sbin/tcpdump
+   40  sudo -u user1 timeout 3 tcpdump -i lo -c 1
+   41  getenforce
+   42  sudo sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
+   43  sudo setenforce 1
+   44  semanage fcontext -a -t httpd_sys_content_t "/mephi-web(/.*)?"
+   45  restorecon -Rv /mephi-web
+   46  ls -Z /mephi-web
+   47  nano /etc/sucurity/access.conf
+   48  nano /etc/security/access.conf
+   49  grep pam_access /etc/pam.d/*
+   50  grep -n pam_access /etc/pam.d/login /etc/pam.d/system-auth /etc/pam.d/password-auth
+   51  sudo cp /etc/pam.d/system-auth /etc/pam.d/system-auth.bak
+   52  echo 'account     required      pam_access.so' | sudo tee -a /etc/pam.d/system-auth
+   53  echo 'account     required      pam_access.so' | sudo tee -a /etc/pam.d/login
+   54  sudo nano /etc/security/access.conf
+   55  echo 'account     required      pam_access.so' | sudo tee -a /etc/pam.d/system-auth
+   56  echo 'account     required      pam_access.so' | sudo tee -a /etc/pam.d/login
+   57  account required pam_access.so
+   58  account required pam_access.so
+   59  grep pam_access /etc/pam.d/*
+   60  sudo cp /etc/pam.d/login /etc/pam.d/login.bak
+   61  sudo sed -i '0,/account[[:space:]]*required[[:space:]]*pam_access\.so/{//!b}; :a; n; /account[[:space:]]*required[[:space:]]*pam_access\.so/{d; ba}' /etc/pam.d/login
+   62  sudo cat /etc/security/access.conf
+   63  grep pam_access /etc/pam.d/*
+   64  sudo sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/' /etc/login.defs
+   65  grep PASS_MAX_DAYS /etc/login.defs
+   66  minlen = 12
+   67  echo 'minlen = 12' | sudo tee -a /etc/security/pwquality.conf
+   68  grep minlen /etc/security/pwquality.conf
+   69  echo 'Hello from Student: 374813' | sudo tee /mephi-web/index.html
+   70  sudo chmod 644 /mephi-web/index.html
+   71  sudo restorecon -v /mephi-web/index.html
+   72  sudo tee /etc/nginx/conf.d/mephi-web.conf > /dev/null <<'EOF'
+server {
+    listen 80 default_server;
+    server_name _;
+
+    root /mephi-web;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+   73  sudo nginx -t
+   74  sudo systemctl restart nginx
+   75  curl http://localhost/
+   76  curl http://localhost/
+   77  curl -s http://localhost/ | head -20
+   78  ls -l /etc/nginx/conf.d/mephi-web.conf
+   79  cat /etc/nginx/conf.d/mephi-web.conf
+   80  ls -lZ /mephi-web/index.html
+   81  cat /mephi-web/index.html
+   82  grep -n "server" /etc/nginx/nginx.conf
+   83  sudo nano /etc/nginx/nginx.conf
+   84  sudo sed -i 's|root         /usr/share/nginx/html;|root         /mephi-web;|' /etc/nginx/nginx.conf
+   85  sudo tee /etc/nginx/conf.d/mephi-web.conf > /dev/null <<'EOF'
+server {
+    listen 80;
+    server_name _;
+    root /mephi-web;
+    index index.html;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+   86  sudo nginx -t
+   87  sudo systemctl restart nginx
+   88  sudo systemctl status nginx
+   89  curl http://localhost/
+   90  curl http://localhost/ > ~/curl.out
+   91  history > ~/history.out
